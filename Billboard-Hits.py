@@ -15,18 +15,14 @@ def collect_data():
     
     r = requests.get(start_url)
     soup = BeautifulSoup(r.text, 'html.parser')
-    #print(soup)
     #print(r.status_code)
 
 
-
-
-    #BELOW FOR SONGS
-    #===============================================SONG NAME================================================
+    
+    #===============================================SONG NAME BELOW================================================
     song_list = []
     #soup2 = soup.find_all('h3', id='title-of-a-story')
     songs = soup.find_all('h3', class_="c-title")
-    #del soup2['id']
 
     #</h3>, <h3 class="c-title a-no-trucate a-font-primary-bold-s u-letter-spacing-0021 lrv-u-font-size-18@tablet lrv-u-font-size-16 u-line-height-125 u-line-height-normal@mobile-max a-truncate-ellipsis u-max-width-330 u-max-width-230@tablet-only" id="title-of-a-story">
     #Rockin' Around The Christmas Tree
@@ -38,29 +34,25 @@ def collect_data():
     #A Holly Jolly Christmas
 
     desired_list = songs[:104] 
-    #actual_list = desired_list[5:]
-
 
     for x in range(len(desired_list)):
         if x > 3:
-    #while (x > 5) & (x < len(desired_list)):
             #['song1', 'song2', 'song3', 'song4'...]
             song_list.append(songs[x].get_text().strip())
 
     #print(len(song_list))
-    #print(song_list)# change to go into tuple or w.e is needed !!!!!!!!!!!!!!!!
-    #======================================================================================ABOVE FOR SONGS
+    #print(song_list)
+    #======================================= =======ABOVE FOR SONGS===================================================
 
 
 
 
-    #=============================================ARTIST NAME BELOW FOR ==========================
+    #=============================================ARTIST NAME BELOW FOR ==============================================
     artist_list = []
     #print(songs[4].get_text())  WHAT HELPED ME FIGURE OUT THE ACTUAL LIST OF SONGS
 
     artists = soup.find_all('span', class_="c-label")
-    #artist_list.append(artists[0].get_text().strip())
-
+    
     desired_list = artists[:835] 
     #print(len(artists))
 
@@ -87,9 +79,8 @@ def collect_data():
         x= x+1
     #print(artist_list)
 
-    #y=0
-    #while y < 8:
-    artist_list.remove("NEW")  # hardcoding? 
+   
+    artist_list.remove("NEW")  
     artist_list.remove("NEW")
     artist_list.remove("NEW")
     artist_list.remove("NEW")
@@ -98,22 +89,20 @@ def collect_data():
     artist_list.remove("NEW")
     artist_list.remove("NEW")
     #print(range(len(artist_list)))
-        #y= x+1
+    
     complete_artist_list = artist_list[::8]
     #len(complete_list)
     #print(complete_artist_list)
-    #==========================================ARTIST NAME ABOVE==================================
+    #============================================ARTIST NAME ABOVE=================================================
 
 
 
 
-    #=========================================WEEKS ON CHART BELOW================================
+    #============================================WEEKS ON CHART BELOW==============================================
 
     rank_list = []
-    #print(songs[4].get_text())  WHAT HELPED ME FIGURE OUT THE ACTUAL LIST OF SONGS
 
     ranks = soup.find_all('span', class_="c-label")
-    #artist_list.append(artists[0].get_text().strip())
 
     desired_list = ranks[:843] 
     #print(len(artists))
@@ -130,7 +119,7 @@ def collect_data():
         x= x+1
     #print(rank_list)
 
-    rank_list.remove("NEW")  # hardcoding? 
+    rank_list.remove("NEW")  
     rank_list.remove("NEW")
     rank_list.remove("NEW")
     rank_list.remove("NEW")
@@ -146,11 +135,11 @@ def collect_data():
     #print(weeks_listed)
     #print(len(complete_list))
 
-    #=========================================WEEKS ON CHART BELOW================================
+    #=============================================WEEKS ON CHART BELOW============================================
 
 
 
-    #=========================================INTO TUPLE======================================
+    #=================================================INTO TUPLE==================================================
     complete_list_set_w_tuple = []
 
     for a in range(len(complete_artist_list)):
@@ -171,71 +160,19 @@ def set_up_db(db_name):
     cur = conn.cursor()
     return cur, conn
     
-#creates table Billboard-100 that will have rank, artist, and song name 
+#creates table Billboard100 that will have artist, song, and weeks on chart 
 def create_table(cur, conn):
-    #creates table "Billboard-100" with labels: Rank, Artist, Song
+    #creates table "Billboard100" with labels: artist, song, weeks on chart
     #cur.execute('CREATE TABLE IF NOT EXISTS Billboard-100 (Rank INTEGER PRIMARY KEY, Artist TEXT, Song TEXT)')
     cur.execute('CREATE TABLE IF NOT EXISTS Billboard100 (Artist TEXT PRIMARY KEY, song TEXT, weeks_in_chart TEXT)') 
     # CHECK IF INTEGER OR STRING^^^^^^^!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     conn.commit()
 
-'''
-def main_collection_to_table(cur, conn, db_name):
 
-    #EXAMPLE OF EXPECTED LIST TO BE ADDED TO TABLE:
-    #[ (rank_num, artist_name, song_name), (rank, artist, song) (rank artist, song) ...]
-    billboard_list = collect_data()
-
-    cur, conn = set_up_db(db_name)
-    create_table(cur, conn)
-
-    #print(billboard_list)
-
-    #limit = 25
-
-    for row in billboard_list:
-
-        #gets rank, artist, and song per row 
-        rank = billboard_list[row][0]
-        #test
-        print(rank)
-
-        artist = billboard_list[row][1]
-        song = billboard_list[row][2]
-
-        #expected to insert the desired data (rank, artist , song) to each row in table
-        cur.execute("INSERT INTO Billboard-100(rank, artist, song) VALUES (?, ?, ?)", (rank, artist, song))
-        conn.commit()
-
-'''
-   
-   
-
-
-# put into visualization document, import, and call function once database is filled in
-'''
-def bar_visualizations():
-
-# X AXIS: song name 
-# Y AXOS: weeks on chart
-
-    return None
-'''
 
 def main():
 
-
-     # TEMPPPPPPPPPPP!!!!!!!!!!!!!!!!!!!!!!!!!!
-    '''
-    print(complete_artist_list[0])
-    print(song_list[0])
-    print(complete_rank_list[0])
-
-    print(complete_artist_list[1])
-    print(song_list[1])
-    print(complete_rank_list[1])
-    '''
 
 
     cur, conn = set_up_db('complete_table.db')
