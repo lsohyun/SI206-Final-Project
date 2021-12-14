@@ -1,3 +1,5 @@
+from matplotlib import artist
+import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 import requests
 import re
@@ -5,15 +7,10 @@ import os
 import csv
 import sqlite3
 
-def set_up_db(db_name):
-    path = os.path.dirname(os.path.abspath(__file__))
-    conn = sqlite3.connect(path+'/'+db_name)
-    cur = conn.cursor()
-    return cur, conn
-
 
 #gathers the ranks, artists, and song from the site -- returns a list of tuples with rank, artist, song data
 def collect_data():
+    
     start_url = 'https://www.billboard.com/charts/hot-100/'
     
     r = requests.get(start_url)
@@ -51,7 +48,7 @@ def collect_data():
             song_list.append(songs[x].get_text().strip())
 
     #print(len(song_list))
-    print(song_list)# change to go into tuple or w.e is needed !!!!!!!!!!!!!!!!
+    #print(song_list)# change to go into tuple or w.e is needed !!!!!!!!!!!!!!!!
     #======================================================================================ABOVE FOR SONGS
 
 
@@ -102,12 +99,9 @@ def collect_data():
     artist_list.remove("NEW")
     #print(range(len(artist_list)))
         #y= x+1
-    complete_list = artist_list[::8]
+    complete_artist_list = artist_list[::8]
     #len(complete_list)
-    print(complete_list)
-
-
-    
+    #print(complete_artist_list)
     #==========================================ARTIST NAME ABOVE==================================
 
 
@@ -147,27 +141,53 @@ def collect_data():
 
     #print(rank_list)
 
-    complete_list = rank_list[::8]
+    weeks_listed = rank_list[::8]
     #print("==============================")
-    print(complete_list)
+    #print(weeks_listed)
+    #print(len(complete_list))
 
-    #for index in range(len(complete_list)):
+    #=========================================WEEKS ON CHART BELOW================================
 
 
+
+    #=========================================INTO TUPLE======================================
+    complete_list_set_w_tuple = []
+
+    for a in range(len(complete_artist_list)):
+        name = complete_artist_list[a]  #iterates for index _ and gets the name of artist
+        title = song_list[a]            #iterates for index _ and gets the title of song
+        weeks = weeks_listed[a]         #iterates for index _ and gets the weeks on chart
+        
+        ordering = (name, title, weeks)
+        complete_list_set_w_tuple.append(ordering)
+    #print(complete_list_set_w_tuple)
+    return complete_list_set_w_tuple
+
+
+
+def set_up_db(db_name):
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db_name)
+    cur = conn.cursor()
+    return cur, conn
+    
 #creates table Billboard-100 that will have rank, artist, and song name 
 def create_table(cur, conn):
     #creates table "Billboard-100" with labels: Rank, Artist, Song
-    cur.execute('CREATE TABLE IF NOT EXISTS Billboard-100 (Rank INTEGER PRIMARY KEY, Artist TEXT, Song TEXT)')
+    #cur.execute('CREATE TABLE IF NOT EXISTS Billboard-100 (Rank INTEGER PRIMARY KEY, Artist TEXT, Song TEXT)')
+    cur.execute('CREATE TABLE IF NOT EXISTS Billboard100 (Artist TEXT PRIMARY KEY, song TEXT, weeks_in_chart TEXT)') 
+    # CHECK IF INTEGER OR STRING^^^^^^^!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     conn.commit()
 
-
+'''
 def main_collection_to_table(cur, conn, db_name):
-    
-    #EXAMPLE OF EXPECTED LIST:
-    #[(rank_num, artist_name, song_name), (rank, artist, song)...]
+
+    #EXAMPLE OF EXPECTED LIST TO BE ADDED TO TABLE:
+    #[ (rank_num, artist_name, song_name), (rank, artist, song) (rank artist, song) ...]
     billboard_list = collect_data()
 
-    cur, conn = set_up_db('billboard.sqlite')
+    cur, conn = set_up_db(db_name)
     create_table(cur, conn)
 
     #print(billboard_list)
@@ -178,6 +198,9 @@ def main_collection_to_table(cur, conn, db_name):
 
         #gets rank, artist, and song per row 
         rank = billboard_list[row][0]
+        #test
+        print(rank)
+
         artist = billboard_list[row][1]
         song = billboard_list[row][2]
 
@@ -185,7 +208,7 @@ def main_collection_to_table(cur, conn, db_name):
         cur.execute("INSERT INTO Billboard-100(rank, artist, song) VALUES (?, ?, ?)", (rank, artist, song))
         conn.commit()
 
-
+'''
    
    
 
@@ -194,21 +217,119 @@ def main_collection_to_table(cur, conn, db_name):
 '''
 def bar_visualizations():
 
+# X AXIS: song name 
+# Y AXOS: weeks on chart
+
     return None
 '''
 
-
-
-'''
 def main():
 
 
+     # TEMPPPPPPPPPPP!!!!!!!!!!!!!!!!!!!!!!!!!!
+    '''
+    print(complete_artist_list[0])
+    print(song_list[0])
+    print(complete_rank_list[0])
+
+    print(complete_artist_list[1])
+    print(song_list[1])
+    print(complete_rank_list[1])
+    '''
+
+
+    cur, conn = set_up_db('complete_table.db')
+
+    create_table(cur, conn)
+
+    complete_data_set = collect_data()
+
+    #print(complete_data_set)
+    #print(range(len(complete_data_set)))
+
+    for row in range(len(complete_data_set)): # (0, 100)  # change to get list from collect_data() , use new list
+
+        #gets rank, artist, and song per row 
+        artists = complete_data_set[row][0] #works
+        songs = complete_data_set[row][1] #works
+        weeks_in_charts = complete_data_set[row][2] #works
+
+        #artist = complete_data_set[row] # doesnt work
+
+        #test
+        print(artists)
+        print(songs)
+        print(weeks_in_charts)
+        
+        cur.execute("INSERT OR IGNORE INTO Billboard100 (artist, song, weeks_in_chart) VALUES (?, ?, ?)", (artists, songs, weeks_in_charts))
+        conn.commit()
+    
+
+
+
+    #CREATE VISUALIZATION
+    #WANT ARTIST ON X AXIS 
+    #WEEKS ON Y AXIS 
+    #BAR CHART
+    #shows popularity of artist for weeks 
+
+    artists_collection = []
+    weeks_collection = []
+
+    sorted_artist_collection = []
+    sorted_weeks_collection =[]
+    
+    for i in range(len(complete_data_set)):
+        artists_collection.append(complete_data_set[i][0]) #works
+        weeks_collection.append(complete_data_set[i][2]) #works
+    #print(artists_collection)
+    #print(weeks_collection)
+    
+
+    #create dictionary with VALUES IN ASCENDING ORDER 
+    #create dictionary []
+    dict_to_be_sorted = {} 
+    for key in artists_collection:
+        for value in weeks_collection:
+            dict_to_be_sorted[key] = int(value)
+            weeks_collection.remove(value)
+            break
+    #print(dict_to_be_sorted)
+
+    #sort dictionary
+    
+    sorted_dict = sorted(dict_to_be_sorted.items(), key=lambda x: x[1])
+    final_list = list(sorted_dict)
+    print(final_list)
+    print("========")
+
+    for r in range(len(final_list)):
+        sorted_artist_collection.append(final_list[r][0])
+        sorted_weeks_collection.append(final_list[r][1])
+    print(sorted_artist_collection)
+    print(sorted_weeks_collection)
+    
+    #dict1 = dict_to_be_sorted.items()
+    #sorted_dict = sorted(dict1)
+    print("==============")
+    print(sorted_dict)
+
+
+    plt.bar(sorted_artist_collection, sorted_weeks_collection)
+
+    plt.xticks(sorted_artist_collection, rotation = 90)
+    
+    plt.xlabel("ARTIST'S NAME")
+    plt.ylabel("WEEKS ON THE CHARTS")
+    plt.title("Visualization of Artists' Popularity Throughout Time")
+   
+    plt.show()
 
 
 
 
     
+
+
 if __name__ == "__main__":
     main()
-
-'''
